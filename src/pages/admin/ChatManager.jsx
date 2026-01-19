@@ -61,24 +61,32 @@ export default function ChatManager() {
   };
 
   useEffect(() => {
-    if (!currentUser) return;
-
     let result = [];
+
     if (activeTab === "priority") {
-      result = sessions.filter((s) => s.status === "live" && !s.handled_by);
-    } else if (activeTab === "mine") {
       result = sessions.filter(
-        (s) => s.status === "live" && s.handled_by === currentUser.email
+        (s) =>
+          s.status?.toLowerCase() === "live" &&
+          (s.handled_by === null || s.handled_by === "")
       );
+    } else if (activeTab === "mine") {
+      if (currentUser) {
+        result = sessions.filter(
+          (s) =>
+            s.status?.toLowerCase() === "live" &&
+            s.handled_by === currentUser.email
+        );
+      }
     } else {
       result = sessions.filter(
         (s) =>
-          s.status === "bot" ||
-          (s.status === "live" &&
-            s.handled_by !== currentUser.email &&
-            s.handled_by !== null)
+          s.status?.toLowerCase() === "bot" ||
+          (s.status?.toLowerCase() === "live" &&
+            s.handled_by !== null &&
+            s.handled_by !== "")
       );
     }
+
     setFilteredSessions(result);
   }, [sessions, activeTab, currentUser]);
 
