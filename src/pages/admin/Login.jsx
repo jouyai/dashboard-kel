@@ -20,7 +20,7 @@ export default function Login() {
     if (error) {
       alert("Login Gagal: " + error.message);
     } else {
-      navigate('/admin/dashboard');
+      navigate('/dashboard');
     }
     setLoading(false);
   };
