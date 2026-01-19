@@ -2,7 +2,7 @@ import { useState, useEffect, Fragment } from 'react';
 import { supabase } from '../../lib/supabaseClient';
 import { 
   TrashIcon, PlusIcon, PhotoIcon, CheckIcon, ChevronUpDownIcon, 
-  ExclamationTriangleIcon, CheckCircleIcon, XCircleIcon 
+  ExclamationTriangleIcon, CheckCircleIcon, XCircleIcon, CalendarIcon 
 } from '@heroicons/react/24/solid';
 import { 
   Listbox, Transition, ListboxButton, ListboxOptions, ListboxOption, 
@@ -118,10 +118,11 @@ export default function BeritaManager() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 md:space-y-8 font-sans">
       
       {/* FORM CARD GLASS */}
-      <div className="bg-white/10 backdrop-blur-md border border-white/20 p-6 rounded-2xl shadow-xl relative overflow-visible z-10">
+      <div className="bg-white/10 backdrop-blur-md border border-white/20 p-4 md:p-6 rounded-2xl shadow-xl relative overflow-visible z-10">
+        {/* Decorative Blur */}
         <div className="absolute -top-10 -right-10 w-40 h-40 bg-blue-500/20 rounded-full blur-3xl pointer-events-none"></div>
 
         <h3 className="font-bold text-white mb-6 flex items-center gap-2 text-lg relative z-10">
@@ -133,23 +134,25 @@ export default function BeritaManager() {
 
         <form onSubmit={handleSubmit} className="space-y-4 relative z-10">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Input Judul */}
             <input 
               type="text" placeholder="Judul Berita" 
-              className="w-full bg-black/20 border border-white/10 p-3 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+              className="w-full bg-black/20 border border-white/10 p-3 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 transition text-sm md:text-base"
               value={form.judul} onChange={e => setForm({...form, judul: e.target.value})} required 
             />
 
+            {/* Select Kategori */}
             <div className="relative">
               <Listbox value={form.kategori} onChange={(val) => setForm({...form, kategori: val})}>
-                <div className="relative mt-1">
-                  <ListboxButton className="relative w-full cursor-pointer bg-black/20 border border-white/10 rounded-xl py-3 pl-4 pr-10 text-left text-white focus:outline-none focus:ring-2 focus:ring-blue-400 transition sm:text-sm">
+                <div className="relative">
+                  <ListboxButton className="relative w-full cursor-pointer bg-black/20 border border-white/10 rounded-xl py-3 pl-4 pr-10 text-left text-white focus:outline-none focus:ring-2 focus:ring-blue-400 transition text-sm md:text-base">
                     <span className="block truncate">{form.kategori}</span>
                     <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
                       <ChevronUpDownIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
                     </span>
                   </ListboxButton>
                   <Transition as={Fragment} leave="transition ease-in duration-100" leaveFrom="opacity-100" leaveTo="opacity-0">
-                    <ListboxOptions className="absolute mt-2 max-h-60 w-full overflow-auto rounded-xl bg-[#0f172a]/90 backdrop-blur-xl border border-white/10 py-1 text-base shadow-2xl ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm z-50">
+                    <ListboxOptions className="absolute mt-2 max-h-60 w-full overflow-auto rounded-xl bg-[#0f172a]/95 backdrop-blur-xl border border-white/10 py-1 text-base shadow-2xl ring-1 ring-black ring-opacity-5 focus:outline-none text-sm z-50">
                       {KATEGORI_OPTIONS.map((kategori, personIdx) => (
                         <ListboxOption key={personIdx} className={({ active }) => `relative cursor-pointer select-none py-3 pl-10 pr-4 transition-colors ${active ? 'bg-blue-600/30 text-white' : 'text-gray-300'}`} value={kategori}>
                           {({ selected }) => (
@@ -167,29 +170,33 @@ export default function BeritaManager() {
             </div>
           </div>
 
+          {/* Text Area */}
           <textarea 
             placeholder="Tulis isi berita lengkap di sini..." rows="4" 
-            className="w-full bg-black/20 border border-white/10 p-3 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+            className="w-full bg-black/20 border border-white/10 p-3 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 transition text-sm md:text-base"
             value={form.isi} onChange={e => setForm({...form, isi: e.target.value})} required
           ></textarea>
           
-          <div className="flex flex-col md:flex-row items-center gap-4">
-             <label className="flex items-center gap-2 cursor-pointer bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 px-4 py-3 rounded-xl transition w-full md:w-auto justify-center">
+          {/* Action Buttons (Stack on Mobile) */}
+          <div className="flex flex-col md:flex-row items-center gap-3 md:gap-4">
+             <label className="flex items-center justify-center gap-2 cursor-pointer bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 px-4 py-3 rounded-xl transition w-full md:w-auto">
                 <PhotoIcon className="h-5 w-5" />
                 <span className="text-sm truncate max-w-[200px]">{imageFile ? imageFile.name : "Pilih Gambar Sampul"}</span>
                 <input type="file" onChange={e => setImageFile(e.target.files[0])} className="hidden" accept="image/*" />
              </label>
 
-             <button disabled={loading} className="flex-1 w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white px-6 py-3 rounded-xl font-medium shadow-lg shadow-blue-500/30 transition-all active:scale-95 disabled:opacity-50">
+             <button disabled={loading} className="w-full flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white px-6 py-3 rounded-xl font-medium shadow-lg shadow-blue-500/30 transition-all active:scale-95 disabled:opacity-50 text-sm md:text-base">
                {loading ? 'Sedang Mengupload...' : 'Terbitkan Berita'}
              </button>
           </div>
         </form>
       </div>
 
-      {/* TABLE LIST */}
+      {/* --- LIST BERITA SECTION --- */}
       <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
-        <div className="overflow-x-auto">
+        
+        {/* 1. TAMPILAN TABLE UNTUK DESKTOP (Hidden on Mobile) */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left text-sm text-gray-300">
             <thead className="bg-black/20 text-blue-200 uppercase text-xs tracking-wider border-b border-white/5">
               <tr>
@@ -208,7 +215,7 @@ export default function BeritaManager() {
                       <div className="w-20 h-14 rounded-lg overflow-hidden border border-white/10">
                         <img src={item.image_url} className="w-full h-full object-cover" alt="thumbnail" />
                       </div> : 
-                      <div className="w-20 h-14 bg-white/5 rounded-lg flex items-center justify-center text-xs border border-white/5">No IMG</div>
+                      <div className="w-20 h-14 bg-white/5 rounded-lg flex items-center justify-center text-[10px] text-gray-500 border border-white/5">No IMG</div>
                     }
                   </td>
                   <td className="p-4 align-top">
@@ -233,6 +240,54 @@ export default function BeritaManager() {
             </tbody>
           </table>
         </div>
+
+        {/* 2. TAMPILAN CARD UNTUK MOBILE (Hidden on Desktop) */}
+        <div className="md:hidden flex flex-col gap-4 p-4">
+          {berita.length === 0 && (
+             <div className="text-center text-gray-500 py-6 text-sm">Belum ada berita yang diterbitkan.</div>
+          )}
+          {berita.map((item) => (
+            <div key={item.id} className="bg-black/20 border border-white/10 rounded-xl p-4 flex flex-col gap-3">
+              {/* Card Header: Image & Meta */}
+              <div className="flex gap-3">
+                {/* Image Thumbnail */}
+                <div className="shrink-0 w-20 h-20 rounded-lg overflow-hidden border border-white/10 bg-white/5">
+                   {item.image_url ? (
+                     <img src={item.image_url} className="w-full h-full object-cover" alt="thumb" />
+                   ) : (
+                     <div className="w-full h-full flex items-center justify-center text-[10px] text-gray-500">No IMG</div>
+                   )}
+                </div>
+
+                {/* Right Info */}
+                <div className="flex-1 min-w-0 flex flex-col justify-between">
+                   <div>
+                      <div className="flex justify-between items-start mb-1">
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full border truncate max-w-[120px] ${getCategoryColor(item.kategori)}`}>
+                           {item.kategori}
+                        </span>
+                        {/* Mobile Delete Button */}
+                        <button onClick={() => openDeleteModal(item.id)} className="p-1.5 -mr-1.5 -mt-1.5 text-red-400 active:bg-red-500/20 rounded-lg transition">
+                           <TrashIcon className="h-4 w-4" />
+                        </button>
+                      </div>
+                      <h4 className="font-bold text-white text-sm leading-tight line-clamp-2">{item.judul}</h4>
+                   </div>
+                   <div className="flex items-center gap-1.5 mt-2">
+                      <CalendarIcon className="h-3 w-3 text-gray-500" />
+                      <span className="text-xs text-gray-400">{new Date(item.created_at).toLocaleDateString()}</span>
+                   </div>
+                </div>
+              </div>
+
+              {/* Card Body: Excerpt */}
+              <p className="text-xs text-gray-300 line-clamp-2 border-t border-white/5 pt-2 mt-1">
+                 {item.isi}
+              </p>
+            </div>
+          ))}
+        </div>
+
       </div>
 
       {/* --- MODAL 1: KONFIRMASI DELETE --- */}
@@ -244,7 +299,7 @@ export default function BeritaManager() {
           <div className="fixed inset-0 overflow-y-auto">
             <div className="flex min-h-full items-center justify-center p-4 text-center">
               <TransitionChild as={Fragment} enter="ease-out duration-300" enterFrom="opacity-0 scale-95" enterTo="opacity-100 scale-100" leave="ease-in duration-200" leaveFrom="opacity-100 scale-100" leaveTo="opacity-0 scale-95">
-                <DialogPanel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-[#0f172a]/90 border border-white/20 backdrop-blur-xl p-6 text-left align-middle shadow-2xl transition-all">
+                <DialogPanel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-[#0f172a]/95 border border-white/20 backdrop-blur-xl p-6 text-left align-middle shadow-2xl transition-all">
                   <div className="flex items-center gap-4">
                     <div className="flex-shrink-0 w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center">
                         <ExclamationTriangleIcon className="h-6 w-6 text-red-400" />
@@ -263,7 +318,7 @@ export default function BeritaManager() {
         </Dialog>
       </Transition>
 
-      {/* --- MODAL 2: FEEDBACK SUKSES/ERROR (BARU) --- */}
+      {/* --- MODAL 2: FEEDBACK SUKSES/ERROR --- */}
       <Transition appear show={feedback.isOpen} as={Fragment}>
         <Dialog as="div" className="relative z-50" onClose={closeFeedback}>
           <TransitionChild as={Fragment} enter="ease-out duration-300" enterFrom="opacity-0" enterTo="opacity-100" leave="ease-in duration-200" leaveFrom="opacity-100" leaveTo="opacity-0">
@@ -274,10 +329,9 @@ export default function BeritaManager() {
             <div className="flex min-h-full items-center justify-center p-4 text-center">
               <TransitionChild as={Fragment} enter="ease-out duration-300" enterFrom="opacity-0 scale-95" enterTo="opacity-100 scale-100" leave="ease-in duration-200" leaveFrom="opacity-100 scale-100" leaveTo="opacity-0 scale-95">
                 <DialogPanel className={`w-full max-w-sm transform overflow-hidden rounded-2xl border backdrop-blur-xl p-6 text-center align-middle shadow-2xl transition-all ${
-                    feedback.type === 'success' ? 'bg-[#0f172a]/90 border-green-500/30' : 'bg-[#0f172a]/90 border-red-500/30'
+                    feedback.type === 'success' ? 'bg-[#0f172a]/95 border-green-500/30' : 'bg-[#0f172a]/95 border-red-500/30'
                 }`}>
                   
-                  {/* ICON */}
                   <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-white/5 mb-4">
                     {feedback.type === 'success' ? (
                         <CheckCircleIcon className="h-12 w-12 text-green-400" />
