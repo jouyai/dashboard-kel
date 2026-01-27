@@ -4,6 +4,10 @@ import DashboardLayout from './pages/admin/DashboardLayout';
 import AdminHome from './pages/admin/AdminHome';
 import BeritaManager from './pages/admin/BeritaManager';
 import ChatManager from './pages/admin/ChatManager';
+import LayananManager from './pages/admin/LayananManager';
+import KelembagaanManager from './pages/admin/KelembagaanManager';
+import TemplateManager from './pages/admin/TemplateManager';
+
 
 function App() {
   return (
@@ -17,6 +21,10 @@ function App() {
           <Route index element={<AdminHome />} /> {/* Halaman Statistik */}
           <Route path="berita" element={<BeritaManager />} />
           <Route path="chat" element={<ChatManager />} />
+          <Route path="layanan" element={<LayananManager />} />
+          <Route path="templates" element={<TemplateManager />} />
+          <Route path="kelembagaan" element={<KelembagaanManager />} />
+
         </Route>
 
         {/* CATCH ALL: Balik ke login jika URL salah */}
