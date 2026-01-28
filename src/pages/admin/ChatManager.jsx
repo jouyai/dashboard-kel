@@ -255,9 +255,9 @@ export default function ChatManager() {
   };
 
   const handleResolve = async () => {
-    if (!confirm("Akhiri sesi ini?")) return;
+    if (!confirm("Akhiri sesi live chat dan alihkan kembali ke mode AI?")) return;
     await supabase.from("chat_sessions").update({ status: "bot", handled_by: null }).eq("id", selectedSession.id);
-    await supabase.from("chat_messages").insert([{ session_id: selectedSession.id, sender: "system", message: "Sesi live chat diakhiri." }]);
+    await supabase.from("chat_messages").insert([{ session_id: selectedSession.id, sender: "system", message: "[Sistem] Sesi live chat diakhiri oleh staff. Mode AI kembali aktif." }]);
     setSelectedSession(null); // Kembali ke list (Mobile & Desktop)
     setActiveTab("all");
     fetchSessions();

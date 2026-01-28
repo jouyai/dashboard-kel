@@ -10,6 +10,7 @@ import {
   XMarkIcon,
   DocumentTextIcon,
   UserGroupIcon,
+  UserCircleIcon,
 } from '@heroicons/react/24/outline';
 
 export default function DashboardLayout() {
@@ -130,6 +131,9 @@ export default function DashboardLayout() {
           <NavItem to="/dashboard/layanan" icon={DocumentTextIcon} label="Persyaratan Layanan" />
           <NavItem to="/dashboard/templates" icon={DocumentTextIcon} label="Manajer Template" />
           <NavItem to="/dashboard/kelembagaan" icon={UserGroupIcon} label="Kelembagaan" />
+
+          <div className="pt-4 pb-2 px-4 text-[10px] font-bold text-blue-300/30 uppercase tracking-[0.2em]">Sistem</div>
+          <NavItem to="/dashboard/account" icon={UserCircleIcon} label="Kelola Akun" />
         </nav>
 
         {/* Bahagian Logout */}
