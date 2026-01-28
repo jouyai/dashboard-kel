@@ -89,7 +89,7 @@ export default function DashboardLayout() {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#0f172a]">
+    <div className="flex h-screen md:h-screen bg-[#0f172a] overflow-hidden">
 
       {/* MOBILE HEADER BAR (Hanya muncul di skrin kecil) */}
       <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-black/40 backdrop-blur-xl border-b border-white/10 z-30 flex items-center justify-between px-6">

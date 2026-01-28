@@ -1,4 +1,4 @@
-import { useState, useEffect, Fragment } from 'react';
+import { useState, useEffect, Fragment, useRef } from 'react';
 import { supabase } from '../../lib/supabaseClient';
 import {
     CheckIcon, ChevronUpDownIcon,
@@ -17,6 +17,7 @@ export default function PageContentManager() {
     const [selectedSlug, setSelectedSlug] = useState(null); // Use slug for selection
     const [editContent, setEditContent] = useState({});
     const [feedback, setFeedback] = useState({ isOpen: false, type: 'success', title: '', message: '' });
+    const editorRef = useRef(null);
 
     // Map slugs to human-readable names and manageable fields
     const PAGE_MAP = {
@@ -115,6 +116,13 @@ export default function PageContentManager() {
         });
 
         setEditContent(content);
+
+        // Auto scroll to editor on mobile
+        if (window.innerWidth < 1024) {
+            setTimeout(() => {
+                editorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
+        }
     };
 
     const handleFieldChange = (key, value) => {
@@ -209,7 +217,7 @@ export default function PageContentManager() {
                 </div>
 
                 {/* RIGHT COLUMN: EDITOR */}
-                <div className="lg:col-span-2 space-y-6">
+                <div ref={editorRef} className="lg:col-span-2 space-y-6 scroll-mt-24">
                     {selectedSlug ? (
                         <div className="bg-white/10 backdrop-blur-md border border-white/20 p-6 rounded-2xl shadow-xl animate-in fade-in duration-300">
                             <div className="flex items-center justify-between mb-8 border-b border-white/5 pb-4">
