@@ -21,16 +21,14 @@ const SidebarItem = ({ session, isSelected, onClick }) => {
   return (
     <div
       onClick={onClick}
-      className={`p-3 md:p-4 rounded-xl cursor-pointer transition-all border relative flex items-start gap-3 mb-2 ${
-        isSelected
-          ? "bg-blue-600/20 border-blue-500/50 shadow-md"
-          : "bg-white/5 border-transparent hover:bg-white/10 hover:border-white/10"
-      }`}
+      className={`p-3 md:p-4 rounded-xl cursor-pointer transition-all border relative flex items-start gap-3 mb-2 ${isSelected
+        ? "bg-blue-600/20 border-blue-500/50 shadow-md"
+        : "bg-white/5 border-transparent hover:bg-white/10 hover:border-white/10"
+        }`}
     >
       {/* Avatar Wrapper */}
-      <div className={`shrink-0 p-2 rounded-full relative ${
-        session.status === "live" ? "bg-green-500/20 text-green-400" : "bg-gray-500/20 text-gray-400"
-      }`}>
+      <div className={`shrink-0 p-2 rounded-full relative ${session.status === "live" ? "bg-green-500/20 text-green-400" : "bg-gray-500/20 text-gray-400"
+        }`}>
         <UserCircleIcon className="h-5 w-5 md:h-6 md:w-6" />
         {session.status === "live" && !session.handled_by && (
           <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-[#0f172a] animate-pulse"></span>
@@ -85,7 +83,7 @@ const MessageBubble = ({ message }) => {
   return (
     <div className={`flex w-full ${isUser ? "justify-start" : "justify-end"} mb-4`}>
       <div className={`max-w-[85%] md:max-w-[70%] flex gap-2 md:gap-3 ${isUser ? "flex-row" : "flex-row-reverse"}`}>
-        
+
         {/* Avatar (Hidden on tiny screens to save space) */}
         <div className="shrink-0 mt-1 hidden sm:block">
           {isUser ? (
@@ -100,11 +98,10 @@ const MessageBubble = ({ message }) => {
         </div>
 
         {/* Bubble Box */}
-        <div className={`p-3 md:p-3.5 rounded-2xl text-sm leading-relaxed shadow-sm break-words ${
-          isUser
-            ? "bg-white/10 text-gray-100 rounded-tl-none border border-white/5"
-            : "bg-blue-600 text-white rounded-tr-none shadow-md"
-        }`}>
+        <div className={`p-3 md:p-3.5 rounded-2xl text-sm leading-relaxed shadow-sm break-words ${isUser
+          ? "bg-white/10 text-gray-100 rounded-tl-none border border-white/5"
+          : "bg-blue-600 text-white rounded-tr-none shadow-md"
+          }`}>
           <p className="whitespace-pre-wrap">{message.message}</p>
           <p className="text-[10px] opacity-60 mt-1 text-right">
             {new Date(message.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
@@ -126,7 +123,7 @@ export default function ChatManager() {
   const [reply, setReply] = useState("");
   const [currentUser, setCurrentUser] = useState(null);
   const [activeTab, setActiveTab] = useState("priority");
-  
+
   const messagesEndRef = useRef(null);
 
   // --- INITIALIZATION ---
@@ -143,7 +140,16 @@ export default function ChatManager() {
       .on("postgres_changes", { event: "*", schema: "public", table: "chat_sessions" }, () => fetchSessions())
       .subscribe();
 
-    return () => supabase.removeChannel(channel);
+    // Listener tambahan untuk chat_messages agar Topik update realtime
+    const messageChannel = supabase
+      .channel("public:chat_messages_global")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_messages" }, () => fetchSessions())
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+      supabase.removeChannel(messageChannel);
+    };
   }, []);
 
   // --- FETCH SESSIONS & TOPICS ---
@@ -160,18 +166,31 @@ export default function ChatManager() {
       let enrichedSessions = sessionData;
 
       if (sessionIds.length > 0) {
+        // Ambil pesan system yang mengandung info topik (Tag Awal atau Switch Topik)
+        // Kita cari pesan yang mengandung "[Sistem] Topik Konsultasi:" ATAU "[Sistem] User ingin berkonsultasi mengenai topik baru:"
         const { data: topicMessages } = await supabase
           .from("chat_messages")
-          .select("session_id, message")
+          .select("session_id, message, created_at")
           .in("session_id", sessionIds)
-          .eq("sender", "user")
-          .ilike("message", "Halo, saya ingin bertanya mengenai%");
+          .or('message.ilike.%[Sistem] Topik Konsultasi:%,message.ilike.%[Sistem] User ingin berkonsultasi mengenai topik baru:%')
+          .order('created_at', { ascending: false });
 
         enrichedSessions = sessionData.map((session) => {
-          const topicMsg = topicMessages?.find((m) => m.session_id === session.id);
-          const topic = topicMsg 
-            ? topicMsg.message.replace(/Halo, saya ingin bertanya mengenai /i, "").replace(/[.]/g, "").trim()
-            : null;
+          // Cari pesan topik TERBARU untuk sesi ini
+          // Karena kita sudah order desc by created_at di query, find() akan menemukan yang paling baru.
+          const latestTopicMsg = topicMessages?.find((m) => m.session_id === session.id);
+
+          let topic = null;
+          if (latestTopicMsg) {
+            topic = latestTopicMsg.message
+              .replace("[Sistem] Topik Konsultasi:", "")
+              .replace("[Sistem] User ingin berkonsultasi mengenai topik baru:", "")
+              .trim();
+          } else {
+            // Fallback: Coba cari dari user greeting lama jika tidak ada system tag
+            // (Opsional, tapi sebaiknya system tag selalu ada sekarang)
+            topic = null;
+          }
           return { ...session, topic };
         });
       }
@@ -198,7 +217,7 @@ export default function ChatManager() {
   // --- FETCH MESSAGES ---
   useEffect(() => {
     if (!selectedSession) return;
-    
+
     const loadMessages = async () => {
       const { data } = await supabase
         .from("chat_messages")
@@ -212,7 +231,7 @@ export default function ChatManager() {
 
     const channel = supabase
       .channel(`chat:${selectedSession.id}`)
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_messages", filter: `session_id=eq.${selectedSession.id}` }, 
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_messages", filter: `session_id=eq.${selectedSession.id}` },
         (payload) => {
           setMessages((prev) => [...prev, payload.new]);
           scrollToBottom();
@@ -260,7 +279,7 @@ export default function ChatManager() {
   return (
     // Gunakan 100dvh untuk mobile browser compatibility yang lebih baik
     <div className="h-[calc(100dvh-100px)] md:h-[calc(100vh-140px)] flex gap-0 md:gap-6 font-sans overflow-hidden relative">
-      
+
       {/* === 1. SIDEBAR LIST === 
           Logic: Pada mobile, sembunyikan jika ada sesi yang dipilih. 
           Pada desktop (md), selalu tampilkan.
@@ -271,7 +290,7 @@ export default function ChatManager() {
         absolute md:relative z-10 bg-[#0f172a] md:bg-transparent
         ${selectedSession ? 'hidden md:flex' : 'flex'}
       `}>
-        
+
         {/* Mobile Title (Hanya muncul di mobile) */}
         <div className="md:hidden p-4 border-b border-white/10 bg-black/20 text-center">
           <h1 className="text-white font-bold text-lg">Daftar Percakapan</h1>
@@ -279,29 +298,28 @@ export default function ChatManager() {
 
         {/* Tabs */}
         <div className="grid grid-cols-3 bg-black/20 p-1 m-2 rounded-xl shrink-0">
-           {[
-             { id: "priority", label: "Antrian", icon: FunnelIcon, count: sessions.filter(s => s.status === "live" && !s.handled_by).length },
-             { id: "mine", label: "Saya", icon: ShieldCheckIcon },
-             { id: "all", label: "Riwayat", icon: ClockIcon }
-           ].map(tab => (
-             <button
-               key={tab.id}
-               onClick={() => setActiveTab(tab.id)}
-               className={`relative flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2 py-2 text-[10px] md:text-xs font-bold rounded-lg transition-all ${
-                 activeTab === tab.id 
-                   ? "bg-blue-600 text-white shadow-lg" 
-                   : "text-gray-400 hover:text-white hover:bg-white/5"
-               }`}
-             >
-               <tab.icon className="h-4 w-4" />
-               <span>{tab.label}</span>
-               {tab.count > 0 && (
-                 <span className="absolute top-1 right-2 md:-top-1 md:-right-1 bg-red-500 text-white text-[9px] w-4 h-4 flex items-center justify-center rounded-full border border-black/50">
-                   {tab.count}
-                 </span>
-               )}
-             </button>
-           ))}
+          {[
+            { id: "priority", label: "Antrian", icon: FunnelIcon, count: sessions.filter(s => s.status === "live" && !s.handled_by).length },
+            { id: "mine", label: "Saya", icon: ShieldCheckIcon },
+            { id: "all", label: "Riwayat", icon: ClockIcon }
+          ].map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`relative flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2 py-2 text-[10px] md:text-xs font-bold rounded-lg transition-all ${activeTab === tab.id
+                ? "bg-blue-600 text-white shadow-lg"
+                : "text-gray-400 hover:text-white hover:bg-white/5"
+                }`}
+            >
+              <tab.icon className="h-4 w-4" />
+              <span>{tab.label}</span>
+              {tab.count > 0 && (
+                <span className="absolute top-1 right-2 md:-top-1 md:-right-1 bg-red-500 text-white text-[9px] w-4 h-4 flex items-center justify-center rounded-full border border-black/50">
+                  {tab.count}
+                </span>
+              )}
+            </button>
+          ))}
         </div>
 
         {/* List Content */}
@@ -313,9 +331,9 @@ export default function ChatManager() {
             </div>
           ) : (
             filteredSessions.map(session => (
-              <SidebarItem 
-                key={session.id} 
-                session={session} 
+              <SidebarItem
+                key={session.id}
+                session={session}
                 isSelected={selectedSession?.id === session.id}
                 onClick={() => setSelectedSession(session)}
               />
@@ -334,15 +352,15 @@ export default function ChatManager() {
         absolute md:relative z-20 bg-[#0f172a] md:bg-transparent
         ${selectedSession ? 'flex' : 'hidden md:flex'}
       `}>
-        
+
         {selectedSession ? (
           <>
             {/* Header Chat */}
             <div className="px-4 py-3 md:px-5 md:py-4 bg-black/20 border-b border-white/5 flex justify-between items-center shrink-0 shadow-lg z-10">
               <div className="flex items-center gap-3 overflow-hidden">
                 {/* BACK BUTTON (Mobile Only) */}
-                <button 
-                  onClick={() => setSelectedSession(null)} 
+                <button
+                  onClick={() => setSelectedSession(null)}
                   className="md:hidden p-2 -ml-2 text-white hover:bg-white/10 rounded-full"
                 >
                   <ArrowLeftIcon className="h-5 w-5" />
@@ -351,7 +369,7 @@ export default function ChatManager() {
                 <div className="w-9 h-9 md:w-10 md:h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-base md:text-lg shadow-lg shrink-0">
                   {selectedSession.user_name?.charAt(0) || "U"}
                 </div>
-                
+
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
                     <h2 className="font-bold text-white text-sm md:text-base truncate">{selectedSession.user_name}</h2>
@@ -363,8 +381,8 @@ export default function ChatManager() {
                     )}
                   </div>
                   <p className="text-[10px] md:text-xs text-gray-400 flex items-center gap-1.5 mt-0.5 truncate">
-                    {selectedSession.status === "live" 
-                      ? selectedSession.handled_by 
+                    {selectedSession.status === "live"
+                      ? selectedSession.handled_by
                         ? <span className="text-blue-300 flex items-center gap-1 truncate"><CheckCircleIcon className="h-3 w-3" /> {selectedSession.handled_by}</span>
                         : <span className="text-red-400 animate-pulse font-bold">⚠️ Menunggu Respon</span>
                       : "🤖 Mode Bot"
@@ -409,8 +427,8 @@ export default function ChatManager() {
                       placeholder={!selectedSession.handled_by ? "Ambil alih..." : "Ketik balasan..."}
                       className="flex-1 bg-white/5 border border-white/10 rounded-xl pl-4 pr-12 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white/10 transition-all"
                     />
-                    <button 
-                      type="submit" 
+                    <button
+                      type="submit"
                       disabled={!reply.trim()}
                       className="absolute right-2 top-2 bottom-2 bg-blue-600 hover:bg-blue-500 disabled:bg-gray-600 disabled:cursor-not-allowed text-white p-2 rounded-lg transition-all shadow-lg"
                     >
