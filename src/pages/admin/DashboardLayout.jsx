@@ -120,7 +120,7 @@ export default function DashboardLayout() {
         </div>
 
         {/* Menu Navigasi */}
-        <nav className="flex-1 p-4 space-y-2 mt-20 md:mt-4">
+        <nav className="flex-1 p-4 space-y-2 mt-20 md:mt-4 overflow-y-auto scrollbar-thin scrollbar-thumb-white/10">
           <NavItem to="/dashboard" icon={Squares2X2Icon} label="Dashboard" end={true} />
           <NavItem to="/dashboard/berita" icon={NewspaperIcon} label="Berita" />
           <NavItem to="/dashboard/chat" icon={ChatBubbleLeftRightIcon} label="Live Chat" badge={unreadCount} />
