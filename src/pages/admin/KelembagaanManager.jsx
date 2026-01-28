@@ -150,37 +150,29 @@ export default function KelembagaanManager() {
                 return {
                     jabatanLabel: "Jabatan (ex: Ketua RW 01)",
                     wilayahLabel: "Wilayah (ex: RT 001/01)",
-                    descLabel: "Visi / Motto",
                     jabatanPlaceholder: "Contoh: Ketua RW 01",
-                    wilayahPlaceholder: "Contoh: RT 001/01",
-                    descPlaceholder: "Tulis visi atau motto..."
+                    wilayahPlaceholder: "Contoh: RT 001/01"
                 };
             case 'lmk':
                 return {
                     jabatanLabel: "Jabatan (ex: Anggota LMK)",
                     wilayahLabel: "Perwakilan Wilayah (ex: RW 02)",
-                    descLabel: "Visi / Pengabdian",
                     jabatanPlaceholder: "Contoh: Anggota LMK",
-                    wilayahPlaceholder: "Contoh: RW 02",
-                    descPlaceholder: "Tulis visi pengabdian..."
+                    wilayahPlaceholder: "Contoh: RW 02"
                 };
             case 'fkdm':
                 return {
                     jabatanLabel: "Jabatan (ex: Ketua FKDM)",
                     wilayahLabel: "Bidang / Fokus",
-                    descLabel: "Motto / Keahlian",
                     jabatanPlaceholder: "Contoh: Ketua FKDM",
-                    wilayahPlaceholder: "Contoh: Bidang Keamanan",
-                    descPlaceholder: "Tulis motto atau bidang keahlian..."
+                    wilayahPlaceholder: "Contoh: Bidang Keamanan"
                 };
             default:
                 return {
                     jabatanLabel: "Jabatan",
                     wilayahLabel: "Wilayah",
-                    descLabel: "Keterangan",
                     jabatanPlaceholder: "Isi jabatan...",
-                    wilayahPlaceholder: "Isi wilayah...",
-                    descPlaceholder: "Isi keterangan..."
+                    wilayahPlaceholder: "Isi wilayah..."
                 };
         }
     };
@@ -256,14 +248,7 @@ export default function KelembagaanManager() {
                         />
                     </div>
 
-                    <div className="lg:col-span-2 space-y-1">
-                        <label className="text-[10px] font-bold text-blue-300 uppercase tracking-widest pl-1">{config.descLabel}</label>
-                        <input
-                            type="text" placeholder={config.descPlaceholder}
-                            className="w-full bg-black/40 border border-white/10 p-3 rounded-xl text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-400 outline-none transition"
-                            value={form.description} onChange={e => setForm({ ...form, description: e.target.value })}
-                        />
-                    </div>
+
 
                     <div className="space-y-1">
                         <label className="text-[10px] font-bold text-blue-300 uppercase tracking-widest pl-1">Foto Anggota</label>
@@ -367,7 +352,7 @@ export default function KelembagaanManager() {
                                     </span>
                                 )}
                             </div>
-                            <p className="text-xs text-gray-500 mt-3 line-clamp-2 italic">"{item.description || 'Tidak ada keterangan.'}"</p>
+
                         </div>
                     </div>
                 ))}
